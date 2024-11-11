@@ -1,0 +1,142 @@
+---
+title: "Data Exploration"
+author: "Christopher Augustine"
+format: html
+editor: visual
+---
+
+getting everything set up 
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(here)
+library(multcomp) 
+library(ggfortify)
+```
+
+reading in the csv with my data 
+```{r}
+e141<- read.csv(here("data", "e141_Photosynthesis (A max, etc.).csv"))
+```
+
+Changing the CO2_Treatment and Nitrogen_Treatment from character to numeric 
+```{r}
+e141 <- e141 %>%
+  mutate(
+    CO2_Treatment = as.factor(CO2_Treatment),
+    Nitrogen_Treatment = as.factor(Nitrogen_Treatment)
+  )
+
+```
+
+confirming the levels of the categories (good no mistakes)
+```{r}
+levels(e141$CO2_Treatment)
+levels(e141$Nitrogen_Treatment)
+```
+
+changing the name of E_mmol_H2O_m2_s1 to transpiration_rate and Amax_mass_nmol_CO2_g1_s1 to assimilation rate to be easier identified and easier to type 
+```{r}
+e141 <- e141 %>%
+  rename(transpiration_rate = E._mmol_H2O_m2_s1) %>% 
+  rename(assimilation_rate = Amax_mass_nmol_CO2_g1_s1)
+
+```
+
+now for the actual data first just going to check for NA values also assigning which rows are na so I can omit them 
+```{r}
+colSums(is.na(e141))
+```
+
+```{r}
+na_rows <- which(is.na(e141$assimilation_rate))
+na_rows
+```
+from this I see that transpiration rate is fine but assimilation rate has 409, I looked at the bottom half of the data and it seems to not have any values for from row 5802 on so I'm just going to omit that data. (random NA at 3714 so got rid of it too) Just going to use indexing you could aslo use the slice function 
+```{r}
+e141 <- e141[1:5801, ]
+e141 <- e141[-3714, ]
+```
+
+now going to check for outliers going to examine the data first with a dot plot then im going to use the IQR method which just includes setting bounds as anything above upper and and less then lower of q1 and q3
+
+```{r}
+ggplot(e141, aes(y = assimilation_rate)) +
+  geom_boxplot(outlier.shape = 19, outlier.colour = "red",outlier.size = 3) +    
+  labs(title = "Boxplot of Assimilation Rate", y = "Assimilation Rate")
+
+```
+```{r}
+Q1_assim <- quantile(e141$assimilation_rate, 0.25, na.rm = TRUE)
+Q3_assim <- quantile(e141$assimilation_rate, 0.75, na.rm = TRUE)
+IQR_assim <- Q3_assim - Q1_assim
+
+lower_bound_assim <- Q1_assim - 1.5 * IQR_assim
+upper_bound_assim <- Q3_assim + 1.5 * IQR_assim
+
+
+outliers_assim <- e141 %>%
+  filter(assimilation_rate < lower_bound_assim | assimilation_rate > upper_bound_assim)
+
+
+outliers_assim
+```
+
+so from this im seeing about 255 outliers which on a relative scale (~5%) is not many of all my data which includes 5800 obs. so Im going to keep it for now and if they really cause to much influence when I start statstical tests Ill omit them. 
+
+Now going to do all these steps again for transpiration rates starting with seeing if it has an NA values. Nice no NA for transpiration but checking back at the data not sure if this is my doing but I cannot get back to the orginal data set at the moment because the University of New mexico is going through a snow storm and their servers are down so were just going to role with it but some values were messed up and prob something to do with the decimal points getting screwed up but it goes from a value of 47.5 to 1022 so lets look at it 
+```{r}
+sum(e141$transpiration_rate > 1000)
+```
+so about 305 are above 1000 with the remaining 5500 being 47 and below so well omit those for now 
+```{r}
+e141 <- e141 %>% 
+  filter(transpiration_rate <= 1000)
+```
+
+now to continue on checking for outleirs and NAs
+```{r}
+colSums(is.na(e141))
+```
+now going to plot the data in a box plot then as before use the IQR to see exactly how many there are if any. 
+```{r}
+ggplot(e141, aes(y = transpiration_rate)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Transpiration Rate", y = "Transpiration Rate")
+
+```
+looks much better then before it was very wonky before changing those values over 1000
+```{r}
+Q1_transpir <- quantile(e141$transpiration_rate, 0.25, na.rm = TRUE)
+Q3_transpir <- quantile(e141$transpiration_rate, 0.75, na.rm = TRUE)
+IQR_transpir <- Q3_transpir - Q1_transpir
+
+lower_bound_transpir <- Q1_transpir - 1.5 * IQR_transpir
+upper_bound_transpir <- Q3_transpir + 1.5 * IQR_transpir
+
+
+outliers_transpir <- e141 %>%
+  filter(transpiration_rate < lower_bound_transpir | transpiration_rate > upper_bound_transpir)
+
+
+outliers_transpir
+```
+so from this we can see about 281 outliers again considering its around ~5% im going to leave them in and see if they influence to much in later statistical tests 
+
+now just some last summary stats to get an idea of means and standard devations as actual values instead of guessing off of a plot 
+```{r}
+e141 %>%
+  summarise(
+    mean_trans_rate = mean(transpiration_rate, na.rm = TRUE),
+    sd_trans_rate = sd(transpiration_rate, na.rm = TRUE),
+    mean_assim_rate = mean(assimilation_rate, na.rm = TRUE),
+    sd_assim_rate = sd(assimilation_rate), na.rm = TRUE)
+```
+now to just save the new dataset
+```{r}
+getwd()
+setwd(here("data"))
+write.csv(e141, "filtered_e141_Photosynthesis_data.csv")
+```
+
+
