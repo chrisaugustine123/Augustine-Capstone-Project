@@ -1,0 +1,125 @@
+---
+title: "Prelim_data_analysis_2wayanova"
+author: "Christopher Augustine"
+format: html
+editor: visual
+---
+
+In this qmd I am going to be using a 2 way anova to see a relationship or lack their of in CO2 Treatment and Nitrogen Treatment and their effect on transpiration rates. 
+
+Going to be using the workflow we ever so love of plotting the data, building the model, checking that model, and last interpret + make a final plot. 
+
+
+Lets get started, so first going to make a clean R environment and read in the filtered data set
+
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(here)
+library(multcomp)
+library(ggfortify)
+```
+
+```{r}
+data<- read.csv(here("data","filtered_e141_Photosynthesis_data.csv"))
+```
+
+nice now that my data is in my environment I will be looking to just see if its correctly structured and transfered properly 
+```{r}
+head(data)
+glimpse(data)
+```
+looks good all there
+
+Going to change the two predictor variables N and Co2 treatment from character to factor types. 
+
+```{r}
+data$Nitrogen_Treatment<- as.factor(data$Nitrogen_Treatment)
+data$CO2_Treatment<- as.factor(data$CO2_Treatment)
+```
+
+Checking the levels of our predictor variables 
+```{r}
+levels(data$CO2_Treatment)
+levels(data$Nitrogen_Treatment)
+```
+
+All good just what we expect two treatment types for each 
+
+Now before I go into exploring the statistical part of the model lets lay out my question/reasoning and null hypothesis: 
+
+So my null hypothesis is that Nitrogen Treatment and CO2 Treatment has no effect on transpiration rates. To test this I will be using a two-way anova as we have 2 categorical nominal predictor variables (Co2 and N treatment) and 1 response variable being continous (transpiration rates) ratio. 
+
+ok lets make this first plot to make some guesses 
+```{r}
+ggplot(data, aes(x = Nitrogen_Treatment, y = transpiration_rate, fill = CO2_Treatment)) +
+  geom_boxplot()+
+  theme_bw()
+
+```
+
+Interpreting the graph: 
+transpirations rates are generally low with some outliers exceeding 20, both N treatment show similar medians, Co2 treatment does not seem to have a significant effect on the trnapsiration rates within nitrogen groups. Lastly, looks like variability appers consistent. For some guess it is not looking like any significant difference but lets check. 
+
+going to first make our model and then going to check some assumptions first 
+```{r}
+model <- aov(transpiration_rate ~ Nitrogen_Treatment * CO2_Treatment, data = data)
+```
+
+now lets look at our assumtions 
+```{r}
+autoplot(model)
+```
+
+So lets go through this cause it doesn't look great
+
+Residuals vs. Fitted: The variance does not look homogeneous with clusters and looks like potential outliers
+
+Normal Q-Q: Residuals definatly deviate from the line in the tail indicating non normality
+
+Scal-Location: Variance of residuals is not constant = heteroscedasticity. 
+
+Residuals vs Leverage: points on gragh may be influential 
+
+So not the best but lets go through it: 
+
+first going to get the output from the 2 way anova: 
+```{r}
+summary(model) 
+```
+Ok so looking at our output 
+Nirogen Treatment has no significant effect on transpiration rate (p = 0.209). CO2 Treatment was very significant effect (p <0.001), so it strongly influences transpiration rates. 
+
+Interaction: We do not have any significant interations (p = 0.768), meaning effects of the two types of treatment are indepedent 
+(Most residuals remain unexplained by the model)
+
+So now going to run a post-hoc tukey test to see any specfics with the treatment types
+```{r}
+TukeyHSD(model) 
+```
+Ok so we have some new info but also some expected results. 
+
+Nitrogen Treatment again no signigcant between Nenrich and Namb (p = 0.209) along with CO2 Treatment having significant difference between Cenrich and Camb 
+(p < 0.001) showing Cenrich may reduce transpiration rates. 
+
+Also seeing some significant pairwise difference with Cenrich and both combiniations with Nitrogen Treatment (p < 0.001) 
+
+No significant differences involving Nenrich: Camb or Namb: Camb (p = 0.893)
+
+Now to make a final plot 
+```{r}
+ggplot(data, aes( x = Nitrogen_Treatment, y= transpiration_rate, color = CO2_Treatment, group = CO2_Treatment))+
+  geom_point()+
+  geom_line()+
+  labs(title = "Interaction Effect of Nitrogen and CO2 Treatment on Transpiration Rates", 
+       x = "Nitrogen Treatment",
+       y = "Transpiration Rate")
+```
+So just some last take aways from this final graph: 
+Co2 treatment Cenrich consistenly lowers transpiration rate in comparison to Camb the other Co2 treatment regardless of nitrogen treatment type. Nitrogen treatment parallel trends are similar so indicating no strong interation on its own. 
+We got some outliers still we have a really high transpiration in the Nenrich- Camb groups which might be influencing variability. 
+
+So, we can conclude that the primary driver in this is CO2 treatment with little interaction between factors. 
+
+Final Statment: 
+We reject the null hypothesis for the effect of CO2 treatment on transpiration rates (F = 60.31, p = < 0.0001), as CO2 does reduce transpiration. On the other hand, we fail to reject the null hypothesis for the effect of N treatment (F= 1.58, p = 0.209) and also the interaction between the two treatments (F = 0.087, p = 0.768), which indicates no sig. influence of nitrogen or interaction effect on transpiration rates. 

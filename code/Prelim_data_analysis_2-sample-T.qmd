@@ -1,0 +1,111 @@
+---
+title: "Prelim_data_analysis_2-sample-T"
+author: "Christopher Augustine"
+format: html
+editor: visual
+---
+
+In this qmd I am going to be using a 2 sample T test to see a difference in means between the 2 types of CO2 treatment and their effect on transpiration rates.
+
+Going to be using the workflow we ever so love of plotting the data, building the model, checking that model, and last interpret + make a final plot. 
+
+Lets get started, so first going to make a clean R environment and read in the filtered data set
+
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(here)
+library(multcomp)
+library(ggfortify)
+library(car)
+```
+
+now reading in the data 
+```{r}
+data<- read.csv(here("data","filtered_e141_Photosynthesis_data.csv"))
+```
+
+nice now that my data is in my environment I will be looking to just see if its correctly structured and transfered properly 
+```{r}
+head(data)
+glimpse(data)
+```
+
+Going to change the predictor variable Co2 treatment from character to factor type.
+```{r}
+data$CO2_Treatment<- as.factor(data$CO2_Treatment)
+```
+
+just going to check levels of the now factor variable again 
+```{r}
+levels(data$CO2_Treatment)
+```
+Now just going to introduce our question and null hypothesis 
+Trying to find a significant difference between the treatment groups on their effect on assimilation rates
+
+Null Hypthoesis: There is no significant difference amoung treatment groups on effect of assimilation rate. 
+
+now lets make a graph to make some guesses on our results and also look at our assumptions 
+
+going to start off first with a histogram to look at spread 
+```{r}
+ggplot(data, aes(x = assimilation_rate, fill = CO2_Treatment)) +
+  geom_histogram(binwidth = 0.5, position = "dodge", alpha = 0.7) +
+  labs(title = "Distribution of Assimilation Rates by CO2 Treatment",
+       x = "Assimilation Rate", y = "Frequency") +
+  theme_bw()
+
+```
+ok so looks like a good unimodal distribution with some outliers above 1000
+
+now going to check a boxplot to see some medians and if they differ
+```{r}
+ggplot(data, aes(x = CO2_Treatment, y = assimilation_rate)) +
+  geom_boxplot() +
+  labs(title = "CO2 Treatment Effect on Assimilation Rates",
+       x = "CO2 Treatment",
+       y = "Assimilation Rate") +
+  theme_bw()
+```
+so from the box pplot we see similar assimlation rates appear in Camb and Cenrich treatments. We have several outliers in both treatments particualrly in Camb which goes past 1500. We can also see a lack of notable difference in medians which may suggest no significant difference 
+
+So for 2 sample t test we need to check some accumptions mainly normaility and an equal variance check so to do that im going to do a shapiro-wilk test to check normality and Levene's test to see of we can assime equal variance and that will decide what two sample test type I use later on. 
+
+first our shapiro-wilk test which we have to test both treatment groups 
+```{r}
+shapiro.test(data$assimilation_rate[data$CO2_Treatment == "Camb"])
+shapiro.test(data$assimilation_rate[data$CO2_Treatment == "Cenrich"])
+```
+so sadly our p value in both groups is less then 0.05 so we violate the normality in both treatments oh well so lets go onto our equal variance (well need another package for this)
+```{r}
+leveneTest(assimilation_rate ~ CO2_Treatment, data = data)
+```
+so again we violate our equal variance test from this levene test and out p value being less then 0.05 so intail we will be doing a Mann-Whitney U test because we breach the two assumption. So we need to use this test as it is non-parametric and doesn't need use to have the assumptions of normality or equal variance. 
+
+```{r}
+wilcox.test(assimilation_rate ~ CO2_Treatment, data = data)
+```
+
+so our p values is greater then 0.05 so the result is no statistical difference in relationship between Cenbrich and Camb. 
+
+Statement time: 
+We fail to reject the null hypthoesis which shows that there is no statistically significant difference in assimilation rate between Camb and Cenrich treatment groups. 
+
+Now lets graph it one more time 
+```{r}
+
+# boxplot for assimilation rates by CO2 treatment
+ggplot(data, aes(x = CO2_Treatment, y = assimilation_rate)) +
+  geom_boxplot(alpha = 0.6) +  
+  labs(title = "CO2 Treatment Effect on Assimilation Rates",
+       x = "CO2 Treatment",
+       y = "Assimilation Rate") +
+  theme_minimal()
+
+
+```
+
+Take aways from all: 
+Outliers: there are several outliers in both treatment groups which may be attributed to the variability but decpite them being outliers majority of the data is centralized 
+Final Statement: 
+We fail to reject the null hypothesis for effect of CO2 treatment on assimilation rate (W = 3834290, p = 0.057) showing that there is no statistically significant difference between Cenrich and Camb. 
