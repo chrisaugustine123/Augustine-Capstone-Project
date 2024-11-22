@@ -1,0 +1,15 @@
+---
+title: "data-exploration-feedback"
+format: html
+editor: visual
+---
+
+## Data exploration feedback
+
+1.  Line 24 - you are actually changing from character to factor
+
+2.  I'd like to know more about why you decided to omit the values \> 1000 for transpiration_rate (you and I discussed this in class, and you reasons are sound, but I don't see them well-described in the .qmd file). Work on providing a more specific narration in your scientific thinking portion of the .qmd file.
+
+3.  I'd like to see some histograms of your data for visual inspection of the quantitative variables and some sort of plots to help you get a sense of what portion of your data belong to each of the different factor levels in your C02_treatment and N_treatment variables.
+
+Otherwise quite good!
