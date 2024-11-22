@@ -109,3 +109,4 @@ Take aways from all:
 Outliers: there are several outliers in both treatment groups which may be attributed to the variability but decpite them being outliers majority of the data is centralized 
 Final Statement: 
 We fail to reject the null hypothesis for effect of CO2 treatment on assimilation rate (W = 3834290, p = 0.057) showing that there is no statistically significant difference between Cenrich and Camb. 
+

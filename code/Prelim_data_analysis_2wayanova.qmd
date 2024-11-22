@@ -115,11 +115,11 @@ ggplot(data, aes( x = Nitrogen_Treatment, y= transpiration_rate, color = CO2_Tre
        x = "Nitrogen Treatment",
        y = "Transpiration Rate")
 ```
-So just some last take aways from this final graph: 
-Co2 treatment Cenrich consistenly lowers transpiration rate in comparison to Camb the other Co2 treatment regardless of nitrogen treatment type. Nitrogen treatment parallel trends are similar so indicating no strong interation on its own. 
+So just some last take always from this final graph: 
+Co2 treatment Cenrich consistently lowers transpiration rate in comparison to Camb the other Co2 treatment regardless of nitrogen treatment type. Nitrogen treatment parallel trends are similar so indicating no strong interaction on its own. 
 We got some outliers still we have a really high transpiration in the Nenrich- Camb groups which might be influencing variability. 
 
 So, we can conclude that the primary driver in this is CO2 treatment with little interaction between factors. 
 
-Final Statment: 
+Final Statement: 
 We reject the null hypothesis for the effect of CO2 treatment on transpiration rates (F = 60.31, p = < 0.0001), as CO2 does reduce transpiration. On the other hand, we fail to reject the null hypothesis for the effect of N treatment (F= 1.58, p = 0.209) and also the interaction between the two treatments (F = 0.087, p = 0.768), which indicates no sig. influence of nitrogen or interaction effect on transpiration rates. 
