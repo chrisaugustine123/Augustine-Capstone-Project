@@ -1,0 +1,37 @@
+---
+title: "prelim analysis feedback"
+format: html
+editor: visual
+---
+
+## Preliminary Analysis Feedback
+
+### Prelim_data_analysis_2-sample_T
+
+Lines 31 - 34; you won't get the weird X column when you read in the data if, when you write the data file in your `datafilter.qmd` file, you include `row.names = F` in your `write.csv` statement.
+
+Line 48 - you mention assimilation rate as response var, but on line 8 you mention transpiration rate as response. Make sure you are correct and consistent throughout.
+
+Line 50 - After your null, I'd like to know if you have any biological reason for thinking that assimilation rate would be different. I'm assuming (perhaps incorrectly) that you're checking to see if the METHOD for adding CO2 to these plants (Camb vs Cenrich) makes a difference, in which case we might hope to see no significant difference. I'd like to see more of this scientific thinking (rather than just stats thinking) explained in the .qmd.
+
+Line 65 - I agree, looks fairly normal. But does blue look different from red in distribution? Make note.
+
+VERY NICE JOB applying levene, Shapiro-Wilks to test assumptions. And figuring out to use non-parametric test.
+
+### Prelim_data_analysis_2wayanova
+
+Line 10 "Going to be using the workflow we ever so love..." -🤩
+
+Line 53 - As per above with 2-sample test, Id like to see at c. line 54 some scientific thinking. Why is this an interesting question to ask? How might N and CO2 supplmentation be likely to impact transpiration rates? Why (biology here). Would you expect one to have a larger impact than the other? Would you expect an interaction? Think about all of that here.
+
+Line 80 - The residula plot is actually ok - the reason for clusters is that you have categorical predictors. But if you imagine a line through the points (as is shown in blue) it is basically flat. Same for scale- location.
+
+Biggest issue is violation of normality, but model is pretty robust for that, so likely ok.
+
+Line 103 - If you use the method I showed for Tukey test, you can et compact letter display, which  you could add to your final figure.
+
+Book (esp. pp 143 - 144) has some good suggestions for a better final plot involving a group_by and summarise to get means and also to get standard errors, then shows how to plot them. Your final plot doesn't show the result very clearly at all.Work to provide a much more informative final figure.
+
+### General
+
+Overall a thorough job.
